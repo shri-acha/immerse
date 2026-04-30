@@ -13,6 +13,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const vocabulary = data.vocabulary || {};
   const rawEdges = data.edges || {};
 
+  // Load Nepali dictionary
+  let nepaliDict = {};
+  try {
+    const dictResponse = await fetch(chrome.runtime.getURL('data/nepali_dict.json'));
+    nepaliDict = await dictResponse.json();
+    console.log(`[Tamang Immersion] Loaded ${Object.keys(nepaliDict).length} Nepali dictionary entries`);
+  } catch (err) {
+    console.error('[Tamang Immersion] Failed to load Nepali dictionary:', err);
+  }
+
   document.getElementById('uniqueWords').textContent = Object.keys(vocabulary).length;
 
   const nodes = [];
@@ -95,11 +105,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let draggedNode = null;
   let mouse = { x: 0, y: 0, isDown: false };
+  let mouseDownPos = { x: 0, y: 0 };
 
   canvas.addEventListener('mousedown', (e) => {
     mouse.isDown = true;
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+    mouseDownPos.x = e.clientX;
+    mouseDownPos.y = e.clientY;
 
     for (let node of nodes) {
       const dx = mouse.x - node.x;
@@ -122,10 +135,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  window.addEventListener('mouseup', () => {
+  window.addEventListener('mouseup', (e) => {
+    const dx = e.clientX - mouseDownPos.x;
+    const dy = e.clientY - mouseDownPos.y;
+    const wasDrag = (dx * dx + dy * dy) > 25;
+
+    if (!wasDrag && draggedNode) {
+      showWordDetail(draggedNode, nepaliDict);
+    }
+
     mouse.isDown = false;
     draggedNode = null;
   });
+
+  // Word detail panel logic
+  const wordDetailEl = document.getElementById('wordDetail');
+  const detailWordEl = document.getElementById('detailWord');
+  const detailPosEl = document.getElementById('detailPos');
+  const detailFreqEl = document.getElementById('detailFreq');
+  const detailDefsEl = document.getElementById('detailDefs');
+
+  document.getElementById('closeDetail').addEventListener('click', () => {
+    wordDetailEl.style.display = 'none';
+  });
+
+  async function showWordDetail(node, dict) {
+    detailWordEl.textContent = node.displayText;
+    detailFreqEl.textContent = `Seen ${node.freq} time${node.freq > 1 ? 's' : ''} during immersion`;
+
+    // First try to get the Nepali translation of this English word
+    let nepaliWord = null;
+    try {
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          action: 'translate',
+          text: node.id,
+          srcLang: 'en',
+          tgtLang: 'ne'
+        }, (res) => resolve(res));
+      });
+      if (response && response.text && response.text !== node.id) {
+        nepaliWord = response.text.trim();
+      }
+    } catch (err) {
+      console.error('Translation for meaning lookup failed:', err);
+    }
+
+    // Look up meaning in Nepali dictionary
+    let entry = null;
+    if (nepaliWord && dict[nepaliWord]) {
+      entry = dict[nepaliWord];
+    }
+
+    // Set part of speech
+    if (entry && entry.pos) {
+      detailPosEl.textContent = entry.pos;
+      detailPosEl.style.display = 'inline';
+    } else {
+      detailPosEl.style.display = 'none';
+    }
+
+    // Set definitions
+    if (entry && entry.definitions && entry.definitions.length > 0) {
+      detailDefsEl.innerHTML = entry.definitions.map((def, i) =>
+        `<div class="def-item"><span class="def-num">${i + 1}.</span> ${def}</div>`
+      ).join('');
+    } else {
+      detailDefsEl.innerHTML = `<div class="no-def">No Nepali dictionary entry found${nepaliWord ? ` for "${nepaliWord}"` : ''}.</div>`;
+    }
+
+    wordDetailEl.style.display = 'block';
+  }
 
   function tick() {
     const cx = canvas.width / 2;

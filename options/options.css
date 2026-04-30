@@ -85,3 +85,86 @@ body, html {
 .lang-select:focus {
   border-color: #4ade80;
 }
+
+.word-detail {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 340px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: rgba(30, 41, 59, 0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  z-index: 20;
+}
+
+.word-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.word-detail-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #f8fafc;
+}
+
+.pos-tag {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #f8fafc;
+}
+
+.detail-freq {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #334155;
+}
+
+.detail-defs {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.detail-defs .def-item {
+  margin-bottom: 10px;
+  padding-left: 12px;
+  border-left: 2px solid #334155;
+}
+
+.detail-defs .def-num {
+  color: #4ade80;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.detail-defs .no-def {
+  color: #64748b;
+  font-style: italic;
+}
