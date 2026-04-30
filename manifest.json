@@ -23,6 +23,7 @@
       "js": ["content.js"]
     }
   ],
+  "options_page": "options/options.html",
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "Tamang Immersion"

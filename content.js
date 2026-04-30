@@ -64,8 +64,7 @@ async function processDOM(rootNode) {
     rootNode,
     NodeFilter.SHOW_TEXT,
     {
-      acceptNode: function (node) {
-        // Skip empty nodes and ignored tags
+      acceptNode: function(node) {
         if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
         let parent = node.parentNode;
         while (parent) {
@@ -73,7 +72,7 @@ async function processDOM(rootNode) {
             return NodeFilter.FILTER_REJECT;
           }
           if (parent.classList && parent.classList.contains('tamang-tooltip-wrapper')) {
-            return NodeFilter.FILTER_REJECT; // Already processed
+             return NodeFilter.FILTER_REJECT;
           }
           parent = parent.parentNode;
         }
@@ -88,8 +87,7 @@ async function processDOM(rootNode) {
     textNodes.push(node);
   }
 
-  // Calculate probability based on difficulty (10% to 40%)
-  const translateProb = difficultyLevel * 0.1;
+  const TARGET_PROB = 0.2; 
 
   for (let textNode of textNodes) {
     const text = textNode.nodeValue;
@@ -100,38 +98,86 @@ async function processDOM(rootNode) {
     let modified = false;
     const fragment = document.createDocumentFragment();
 
-    for (let sentence of sentences) {
-      if (Math.random() < translateProb) {
-        stats.seen++;
-        try {
-          const translated = await translateWithAPI(sentence.trim());
-          if (translated && translated !== sentence.trim()) {
-            stats.translated++;
-            const wrapper = document.createElement('span');
-            wrapper.className = 'tamang-tooltip-wrapper';
-            wrapper.setAttribute('data-original', sentence.trim());
-            wrapper.textContent = translated + " ";
-            fragment.appendChild(wrapper);
-            modified = true;
+    let isParagraphTargeted = difficultyLevel === 4 && Math.random() < TARGET_PROB;
 
-            // Save stats
-            chrome.storage.local.set({ stats });
-            continue;
+    for (let sentence of sentences) {
+      let translateSentence = isParagraphTargeted || (difficultyLevel < 4 && Math.random() < TARGET_PROB);
+      
+      if (translateSentence) {
+        if (difficultyLevel === 3 || difficultyLevel === 4) {
+          stats.seen++;
+          try {
+            const translated = await translateWithAPI(sentence.trim());
+            if (translated && translated !== sentence.trim()) {
+              stats.translated++;
+              const wrapper = document.createElement('span');
+              wrapper.className = 'tamang-tooltip-wrapper';
+              wrapper.setAttribute('data-original', sentence.trim());
+              wrapper.textContent = translated + " ";
+              fragment.appendChild(wrapper);
+              modified = true;
+              chrome.storage.local.set({ stats });
+              continue;
+            }
+          } catch (e) {
+            console.error(e);
           }
-        } catch (e) {
-          console.error(e);
+        } else {
+          // Level 1 & 2: Translate words
+          const tokens = sentence.split(/(\b[a-zA-Z]+\b)/);
+          let wordTokens = tokens.filter(t => /^[a-zA-Z]+$/.test(t) && t.length > 2);
+          
+          let wordsToTranslate = new Set();
+          let numWordsToTranslate = difficultyLevel === 1 ? 1 : Math.ceil(wordTokens.length * 0.4);
+          
+          // Shuffle wordTokens to pick random words
+          wordTokens.sort(() => 0.5 - Math.random());
+          for (let i = 0; i < Math.min(numWordsToTranslate, wordTokens.length); i++) {
+             wordsToTranslate.add(wordTokens[i]);
+          }
+
+          let sentenceModified = false;
+          let newSentenceFragment = document.createDocumentFragment();
+          
+          for (let token of tokens) {
+            if (wordsToTranslate.has(token)) {
+                 stats.seen++;
+                 try {
+                   const translated = await translateWithAPI(token);
+                   if (translated && translated.trim().toLowerCase() !== token.toLowerCase()) {
+                     stats.translated++;
+                     const wrapper = document.createElement('span');
+                     wrapper.className = 'tamang-tooltip-wrapper';
+                     wrapper.setAttribute('data-original', token);
+                     wrapper.textContent = translated;
+                     newSentenceFragment.appendChild(wrapper);
+                     sentenceModified = true;
+                     wordsToTranslate.delete(token); // Avoid translating duplicate words multiple times
+                     continue;
+                   }
+                 } catch(e) {}
+            }
+            newSentenceFragment.appendChild(document.createTextNode(token));
+          }
+          
+          if (sentenceModified) {
+             fragment.appendChild(newSentenceFragment);
+             modified = true;
+             chrome.storage.local.set({ stats });
+             continue;
+          }
         }
       }
-
-      // Keep original
+      
+      // Keep original sentence
       fragment.appendChild(document.createTextNode(sentence));
     }
 
     if (modified) {
       textNode.parentNode.replaceChild(fragment, textNode);
     }
-
-    // Add small delay to avoid hammering the API if we batch many sentences
+    
+    // Add small delay to avoid hammering the API
     await new Promise(r => setTimeout(r, 50));
   }
 }

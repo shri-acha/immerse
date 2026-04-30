@@ -39,13 +39,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  const viewGraphBtn = document.getElementById('viewGraphBtn');
+  if (viewGraphBtn) {
+    viewGraphBtn.addEventListener('click', () => {
+      chrome.runtime.openOptionsPage();
+    });
+  }
+
   function updateDifficultyDesc(level) {
-    const percentages = {
-      1: '~10%',
-      2: '~20%',
-      3: '~30%',
-      4: '~40%'
+    const descriptions = {
+      1: 'Translates a few random words per sentence.',
+      2: 'Translates many words per sentence.',
+      3: 'Translates entire sentences.',
+      4: 'Translates entire paragraphs.'
     };
-    difficultyDesc.textContent = `Replaces ${percentages[level]} of sentences.`;
+    difficultyDesc.textContent = descriptions[level];
   }
 });

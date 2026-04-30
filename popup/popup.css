@@ -104,11 +104,11 @@ h1 {
   transition: .3s;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--primary);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(20px);
 }
 
@@ -206,4 +206,28 @@ input:checked + .slider:before {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.primary-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 16px;
+  background: var(--primary);
+  color: var(--bg-color);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.primary-btn:hover {
+  background: var(--primary-hover);
+}
+
+.primary-btn:active {
+  transform: scale(0.98);
 }

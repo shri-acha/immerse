@@ -1,0 +1,188 @@
+document.addEventListener('DOMContentLoaded', async () => {
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const data = await chrome.storage.local.get(['vocabulary', 'edges']);
+  const vocabulary = data.vocabulary || {};
+  const rawEdges = data.edges || {};
+
+  document.getElementById('uniqueWords').textContent = Object.keys(vocabulary).length;
+
+  const nodes = [];
+  const nodeMap = new Map();
+
+  let maxFreq = 1;
+  for (const word in vocabulary) {
+    if (vocabulary[word] > maxFreq) maxFreq = vocabulary[word];
+  }
+
+  for (const word in vocabulary) {
+    const freq = vocabulary[word];
+    const radius = 15 + (freq / maxFreq) * 25;
+    const node = {
+      id: word,
+      freq: freq,
+      r: radius,
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: 0,
+      vy: 0,
+      color: `hsl(${140 + (freq / maxFreq) * 60}, 80%, 60%)`
+    };
+    nodes.push(node);
+    nodeMap.set(word, node);
+  }
+
+  const links = [];
+  for (const key in rawEdges) {
+    const parts = key.split('-');
+    if (parts.length === 2 && nodeMap.has(parts[0]) && nodeMap.has(parts[1])) {
+      links.push({
+        source: nodeMap.get(parts[0]),
+        target: nodeMap.get(parts[1]),
+        weight: rawEdges[key]
+      });
+    }
+  }
+
+  const REPULSION = 5000;
+  const SPRING_LENGTH = 150;
+  const SPRING_K = 0.02;
+  const GRAVITY = 0.05;
+  const DAMPING = 0.85;
+
+  let draggedNode = null;
+  let mouse = { x: 0, y: 0, isDown: false };
+
+  canvas.addEventListener('mousedown', (e) => {
+    mouse.isDown = true;
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+
+    for (let node of nodes) {
+      const dx = mouse.x - node.x;
+      const dy = mouse.y - node.y;
+      if (dx * dx + dy * dy <= node.r * node.r) {
+        draggedNode = node;
+        break;
+      }
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    if (draggedNode) {
+      draggedNode.x = mouse.x;
+      draggedNode.y = mouse.y;
+      draggedNode.vx = 0;
+      draggedNode.vy = 0;
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    mouse.isDown = false;
+    draggedNode = null;
+  });
+
+  function tick() {
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n1 = nodes[i];
+      if (n1 === draggedNode) continue;
+
+      n1.vx += (cx - n1.x) * GRAVITY * 0.01;
+      n1.vy += (cy - n1.y) * GRAVITY * 0.01;
+
+      for (let j = i + 1; j < nodes.length; j++) {
+        const n2 = nodes[j];
+        if (n1 === n2) continue;
+
+        const dx = n2.x - n1.x;
+        const dy = n2.y - n1.y;
+        let distSq = dx * dx + dy * dy;
+        if (distSq === 0) distSq = 0.1;
+
+        const force = REPULSION / distSq;
+        const dist = Math.sqrt(distSq);
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+
+        n1.vx -= fx;
+        n1.vy -= fy;
+        n2.vx += fx;
+        n2.vy += fy;
+      }
+    }
+
+    for (const link of links) {
+      const dx = link.target.x - link.source.x;
+      const dy = link.target.y - link.source.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist === 0) continue;
+
+      const force = (dist - SPRING_LENGTH) * SPRING_K;
+      const fx = (dx / dist) * force;
+      const fy = (dy / dist) * force;
+
+      if (link.source !== draggedNode) {
+        link.source.vx += fx;
+        link.source.vy += fy;
+      }
+      if (link.target !== draggedNode) {
+        link.target.vx -= fx;
+        link.target.vy -= fy;
+      }
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const node of nodes) {
+      if (node !== draggedNode) {
+        node.vx *= DAMPING;
+        node.vy *= DAMPING;
+        node.x += node.vx;
+        node.y += node.vy;
+      }
+    }
+
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+    for (const link of links) {
+      ctx.beginPath();
+      ctx.lineWidth = Math.min(link.weight, 5);
+      ctx.moveTo(link.source.x, link.source.y);
+      ctx.lineTo(link.target.x, link.target.y);
+      ctx.stroke();
+    }
+
+    for (const node of nodes) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+      ctx.fillStyle = node.color;
+      ctx.fill();
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#0f172a';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `500 ${Math.max(10, node.r * 0.4)}px Inter`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.id, node.x, node.y);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  tick();
+});
