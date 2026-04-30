@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tamang Immersion</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Tamang Immersion</h1>
+      <p class="subtitle">Learn effortlessly as you browse</p>
+    </header>
+
+    <div class="card mode-card">
+      <div class="flex-between">
+        <label for="learningMode" class="toggle-label">Learning Mode</label>
+        <label class="switch">
+          <input type="checkbox" id="learningMode">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <p class="desc">Translate parts of text to Tamang.</p>
+    </div>
+
+    <div class="card difficulty-card">
+      <label for="difficultyLevel">Immersion Level</label>
+      <div class="slider-container">
+        <input type="range" id="difficultyLevel" min="1" max="4" value="1" class="difficulty-slider">
+        <div class="level-labels">
+          <span>Lv 1</span>
+          <span>Lv 2</span>
+          <span>Lv 3</span>
+          <span>Lv 4</span>
+        </div>
+      </div>
+      <p class="desc" id="difficultyDesc">Replaces ~10% of sentences.</p>
+    </div>
+
+    <div class="card stats-card">
+      <h2>Your Progress</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-value" id="statSeen">0</span>
+          <span class="stat-label">Seen</span>
+        </div>
+        <div class="stat-box highlight">
+          <span class="stat-value" id="statTranslated">0</span>
+          <span class="stat-label">Translated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>

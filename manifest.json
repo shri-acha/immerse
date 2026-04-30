@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Tamang Immersion",
+  "version": "1.0",
+  "description": "Learn the Tamang language passively while browsing the web.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://tmt.ilprl.ku.edu.np/lang-translate"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["content.css"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Tamang Immersion"
+  }
+}
