@@ -28,17 +28,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     const radius = 15 + (freq / maxFreq) * 25;
     const node = {
       id: word,
+      displayText: word,
       freq: freq,
       r: radius,
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+      y: canvas.height / 2 + (Math.random() - 0.5) * 200,
       vx: 0,
       vy: 0,
-      color: `hsl(${140 + (freq / maxFreq) * 60}, 80%, 60%)`
+      color: `hsl(${140 + (freq / maxFreq) * 60}, 80%, 35%)`
     };
     nodes.push(node);
     nodeMap.set(word, node);
   }
+  
+  // Handle Language Switching
+  const langSelect = document.getElementById('graphLang');
+  langSelect.addEventListener('change', async (e) => {
+    const lang = e.target.value;
+    
+    if (lang === 'en') {
+      nodes.forEach(n => n.displayText = n.id);
+      return;
+    }
+    
+    // Disable select while translating
+    langSelect.disabled = true;
+    
+    for (const node of nodes) {
+      try {
+        const response = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            action: 'translate',
+            text: node.id,
+            srcLang: 'en',
+            tgtLang: lang
+          }, (res) => resolve(res));
+        });
+        if (response && response.text) {
+          node.displayText = response.text;
+        }
+      } catch (err) {
+        console.error("Translation failed for", node.id, err);
+      }
+    }
+    
+    langSelect.disabled = false;
+  });
 
   const links = [];
   for (const key in rawEdges) {
@@ -55,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const REPULSION = 5000;
   const SPRING_LENGTH = 150;
   const SPRING_K = 0.02;
-  const GRAVITY = 0.05;
+  const GRAVITY = 0.5;
   const DAMPING = 0.85;
 
   let draggedNode = null;
@@ -110,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const dx = n2.x - n1.x;
         const dy = n2.y - n1.y;
         let distSq = dx * dx + dy * dy;
-        if (distSq === 0) distSq = 0.1;
+        if (distSq < 100) distSq = 100; // Stabilize: Prevent infinite forces when too close
 
         const force = REPULSION / distSq;
         const dist = Math.sqrt(distSq);
@@ -127,8 +162,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const link of links) {
       const dx = link.target.x - link.source.x;
       const dy = link.target.y - link.source.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist === 0) continue;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist === 0) dist = 0.1;
 
       const force = (dist - SPRING_LENGTH) * SPRING_K;
       const fx = (dx / dist) * force;
@@ -152,6 +187,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         node.vy *= DAMPING;
         node.x += node.vx;
         node.y += node.vy;
+
+        // Canvas Boundaries (Walls) to keep nodes inside screen
+        if (node.x < node.r) {
+          node.x = node.r;
+          node.vx *= -0.5;
+        } else if (node.x > canvas.width - node.r) {
+          node.x = canvas.width - node.r;
+          node.vx *= -0.5;
+        }
+
+        if (node.y < node.r) {
+          node.y = node.r;
+          node.vy *= -0.5;
+        } else if (node.y > canvas.height - node.r) {
+          node.y = canvas.height - node.r;
+          node.vy *= -0.5;
+        }
       }
     }
 
@@ -175,10 +227,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = `500 ${Math.max(10, node.r * 0.4)}px Inter`;
+      ctx.font = `700 ${Math.max(12, node.r * 0.6)}px Inter`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(node.id, node.x, node.y);
+      ctx.fillText(node.displayText, node.x, node.y);
     }
 
     requestAnimationFrame(tick);

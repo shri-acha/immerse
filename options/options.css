@@ -30,16 +30,13 @@ body, html {
   border-radius: 16px;
   border: 1px solid #334155;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  pointer-events: none;
   z-index: 10;
 }
 
 .overlay h1 {
   margin: 0 0 8px 0;
   font-size: 24px;
-  background: linear-gradient(135deg, #4ade80, #3b82f6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #f8fafc;
 }
 
 .overlay p {
@@ -63,4 +60,28 @@ body, html {
 
 .stats strong {
   color: #4ade80;
+}
+
+.graph-controls {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.lang-select {
+  background: rgba(15, 23, 42, 0.8);
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.lang-select:focus {
+  border-color: #4ade80;
 }
