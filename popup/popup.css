@@ -229,3 +229,80 @@ input:checked+.slider:before {
 .primary-btn:active {
   transform: scale(0.98);
 }
+
+/* Quiz Performance Section */
+.quiz-heading {
+  font-size: 13px;
+  margin: 16px 0 12px 0;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.stats-grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.stat-correct {
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.stat-correct .stat-value {
+  color: #4ade80;
+}
+
+.stat-wrong {
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.stat-wrong .stat-value {
+  color: #f87171;
+}
+
+.stat-hinted {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.stat-hinted .stat-value {
+  color: #fbbf24;
+}
+
+/* Stacked progress bar */
+.quiz-bar-container {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  position: relative;
+}
+
+.quiz-bar-correct {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  transition: width 0.4s ease;
+}
+
+.quiz-bar-wrong {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  transition: width 0.4s ease;
+}
+
+.quiz-bar-hinted {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  transition: width 0.4s ease;
+  opacity: 0.7;
+}

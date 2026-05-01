@@ -86,6 +86,36 @@ body, html {
   border-color: #4ade80;
 }
 
+.export-controls {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.export-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.export-btn:hover {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.export-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
 .word-detail {
   position: absolute;
   bottom: 24px;
@@ -167,4 +197,108 @@ body, html {
 .detail-defs .no-def {
   color: #64748b;
   font-style: italic;
+}
+
+/* Quiz Metrics Panel */
+.quiz-metrics-panel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #334155;
+}
+
+.quiz-metrics-panel h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.metrics-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#donutChart {
+  flex-shrink: 0;
+}
+
+.metrics-numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.metric-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.metric-correct .metric-dot {
+  background: #4ade80;
+}
+
+.metric-wrong .metric-dot {
+  background: #f87171;
+}
+
+.metric-hinted .metric-dot {
+  background: #fbbf24;
+}
+
+.metric-label {
+  color: #94a3b8;
+  flex: 1;
+}
+
+.metric-val {
+  font-weight: 700;
+  color: #f8fafc;
+  min-width: 24px;
+  text-align: right;
+}
+
+/* Node legend */
+.node-legend {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.legend-title {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
 }

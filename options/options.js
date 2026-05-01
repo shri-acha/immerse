@@ -9,9 +9,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('resize', resize);
   resize();
 
-  const data = await chrome.storage.local.get(['vocabulary', 'edges']);
+  const data = await chrome.storage.local.get(['vocabulary', 'edges', 'quizMetrics', 'wordStats']);
   const vocabulary = data.vocabulary || {};
   const rawEdges = data.edges || {};
+  const quizMetrics = data.quizMetrics || { correct: 0, wrong: 0, hinted: 0 };
+  const wordStats = data.wordStats || {};
 
   // Load Nepali dictionary
   let nepaliDict = {};
@@ -33,6 +35,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (vocabulary[word] > maxFreq) maxFreq = vocabulary[word];
   }
 
+  // Determine node color based on quiz performance
+  function getNodeColor(word, freq) {
+    const ws = wordStats[word];
+    if (!ws || (ws.correct === 0 && ws.incorrect === 0)) {
+      // Untested — blue tones
+      return `hsl(${215 + (freq / maxFreq) * 15}, 70%, 45%)`;
+    }
+    const total = ws.correct + ws.incorrect;
+    const ratio = ws.correct / total;
+    if (ratio >= 0.75) {
+      // Mastered — green
+      return `hsl(${142 + (ratio * 20)}, 75%, ${30 + ratio * 15}%)`;
+    } else if (ratio >= 0.4) {
+      // Needs practice — amber/yellow
+      return `hsl(${38 + (ratio * 10)}, 85%, 42%)`;
+    } else {
+      // Weak — red
+      return `hsl(${0 + (ratio * 15)}, 75%, 45%)`;
+    }
+  }
+
   for (const word in vocabulary) {
     const freq = vocabulary[word];
     const radius = 15 + (freq / maxFreq) * 25;
@@ -45,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       y: canvas.height / 2 + (Math.random() - 0.5) * 200,
       vx: 0,
       vy: 0,
-      color: `hsl(${140 + (freq / maxFreq) * 60}, 80%, 35%)`
+      color: getNodeColor(word, freq)
     };
     nodes.push(node);
     nodeMap.set(word, node);
@@ -159,9 +182,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     wordDetailEl.style.display = 'none';
   });
 
+  // --- Quiz Metrics Donut Chart ---
+  function drawDonut(correct, wrong, hinted) {
+    const donutCanvas = document.getElementById('donutChart');
+    const dCtx = donutCanvas.getContext('2d');
+    const cx = donutCanvas.width / 2;
+    const cy = donutCanvas.height / 2;
+    const outerR = 36;
+    const innerR = 22;
+    const total = correct + wrong;
+
+    dCtx.clearRect(0, 0, donutCanvas.width, donutCanvas.height);
+
+    if (total === 0) {
+      // Empty state — draw grey ring
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR, 0, Math.PI * 2);
+      dCtx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
+      dCtx.fillStyle = '#334155';
+      dCtx.fill();
+
+      dCtx.fillStyle = '#64748b';
+      dCtx.font = '700 11px Inter';
+      dCtx.textAlign = 'center';
+      dCtx.textBaseline = 'middle';
+      dCtx.fillText('N/A', cx, cy);
+      return;
+    }
+
+    const slices = [
+      { value: correct, color: '#4ade80' },
+      { value: wrong, color: '#f87171' }
+    ];
+
+    let startAngle = -Math.PI / 2;
+    for (const slice of slices) {
+      if (slice.value === 0) continue;
+      const sliceAngle = (slice.value / total) * Math.PI * 2;
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR, startAngle, startAngle + sliceAngle);
+      dCtx.arc(cx, cy, innerR, startAngle + sliceAngle, startAngle, true);
+      dCtx.closePath();
+      dCtx.fillStyle = slice.color;
+      dCtx.fill();
+      startAngle += sliceAngle;
+    }
+
+    // Hinted indicator — small arc on the outside
+    if (hinted > 0) {
+      const hintedAngle = Math.min((hinted / total) * Math.PI * 2, Math.PI * 2);
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR + 3, -Math.PI / 2, -Math.PI / 2 + hintedAngle);
+      dCtx.strokeStyle = '#fbbf24';
+      dCtx.lineWidth = 3;
+      dCtx.lineCap = 'round';
+      dCtx.stroke();
+    }
+
+    // Center percentage
+    const pct = Math.round((correct / total) * 100);
+    dCtx.fillStyle = '#f8fafc';
+    dCtx.font = '700 13px Inter';
+    dCtx.textAlign = 'center';
+    dCtx.textBaseline = 'middle';
+    dCtx.fillText(pct + '%', cx, cy);
+  }
+
+  // Populate metrics
+  document.getElementById('graphCorrect').textContent = quizMetrics.correct;
+  document.getElementById('graphWrong').textContent = quizMetrics.wrong;
+  document.getElementById('graphHinted').textContent = quizMetrics.hinted;
+  drawDonut(quizMetrics.correct, quizMetrics.wrong, quizMetrics.hinted);
+
   async function showWordDetail(node, dict) {
     detailWordEl.textContent = node.displayText;
-    detailFreqEl.textContent = `Seen ${node.freq} time${node.freq > 1 ? 's' : ''} during immersion`;
+
+    // Build frequency + quiz stats text
+    let freqText = `Seen ${node.freq} time${node.freq > 1 ? 's' : ''} during immersion`;
+    const ws = wordStats[node.id];
+    if (ws && (ws.correct > 0 || ws.incorrect > 0)) {
+      freqText += ` · Quiz: ✅ ${ws.correct}  ❌ ${ws.incorrect}`;
+      if (ws.hinted > 0) freqText += `  💡 ${ws.hinted}`;
+    }
+    detailFreqEl.textContent = freqText;
 
     // First try to get the Nepali translation of this English word
     let nepaliWord = null;
@@ -206,6 +309,102 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     wordDetailEl.style.display = 'block';
   }
+
+  // --- Export Logic ---
+  function downloadFile(filename, content, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function buildExportData() {
+    const entries = [];
+
+    for (const node of nodes) {
+      const word = node.id;
+      const freq = node.freq;
+
+      // Get Nepali translation
+      let nepaliTranslation = '';
+      try {
+        const neRes = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            action: 'translate', text: word, srcLang: 'en', tgtLang: 'ne'
+          }, (res) => resolve(res));
+        });
+        if (neRes && neRes.text && neRes.text !== word) nepaliTranslation = neRes.text.trim();
+      } catch (e) {}
+
+      // Get Tamang translation
+      let tamangTranslation = '';
+      try {
+        const tmgRes = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            action: 'translate', text: word, srcLang: 'en', tgtLang: 'tmg'
+          }, (res) => resolve(res));
+        });
+        if (tmgRes && tmgRes.text && tmgRes.text !== word) tamangTranslation = tmgRes.text.trim();
+      } catch (e) {}
+
+      // Get Nepali meaning from dictionary
+      let meaning = '';
+      let pos = '';
+      if (nepaliTranslation && nepaliDict[nepaliTranslation]) {
+        const entry = nepaliDict[nepaliTranslation];
+        pos = entry.pos || '';
+        meaning = (entry.definitions || []).join(' | ');
+      }
+
+      entries.push({
+        word,
+        frequency: freq,
+        nepali: nepaliTranslation,
+        tamang: tamangTranslation,
+        part_of_speech: pos,
+        meaning
+      });
+    }
+
+    return entries;
+  }
+
+  document.getElementById('exportJSON').addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Exporting...';
+
+    const entries = await buildExportData();
+    const output = {
+      exported_at: new Date().toISOString(),
+      total_words: entries.length,
+      entries
+    };
+    downloadFile('tamang_immersion_knowledgebase.json', JSON.stringify(output, null, 2), 'application/json');
+
+    btn.disabled = false;
+    btn.textContent = 'Export JSON';
+  });
+
+  document.getElementById('exportCSV').addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Exporting...';
+
+    const entries = await buildExportData();
+    const header = 'Word,Frequency,Nepali,Tamang,Part of Speech,Meaning';
+    const rows = entries.map(e => {
+      const esc = (s) => `"${(s || '').replace(/"/g, '""')}"`;
+      return [esc(e.word), e.frequency, esc(e.nepali), esc(e.tamang), esc(e.part_of_speech), esc(e.meaning)].join(',');
+    });
+    downloadFile('tamang_immersion_knowledgebase.csv', header + '\n' + rows.join('\n'), 'text/csv');
+
+    btn.disabled = false;
+    btn.textContent = 'Export CSV';
+  });
 
   function tick() {
     const cx = canvas.width / 2;

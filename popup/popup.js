@@ -4,9 +4,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const difficultyDesc = document.getElementById('difficultyDesc');
   const statSeen = document.getElementById('statSeen');
   const statTranslated = document.getElementById('statTranslated');
+  const statCorrect = document.getElementById('statCorrect');
+  const statWrong = document.getElementById('statWrong');
+  const statHinted = document.getElementById('statHinted');
 
   // Load initial settings
-  const data = await chrome.storage.local.get(['isLearningMode', 'difficultyLevel', 'stats']);
+  const data = await chrome.storage.local.get(['isLearningMode', 'difficultyLevel', 'stats', 'quizMetrics']);
   
   modeToggle.checked = data.isLearningMode || false;
   difficultySlider.value = data.difficultyLevel || 1;
@@ -16,6 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     statSeen.textContent = data.stats.seen || 0;
     statTranslated.textContent = data.stats.translated || 0;
   }
+
+  updateQuizMetrics(data.quizMetrics || { correct: 0, wrong: 0, hinted: 0 });
 
   // Event Listeners
   modeToggle.addEventListener('change', () => {
@@ -33,9 +38,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Listen for real-time stat updates from content script
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local' && changes.stats) {
-      statSeen.textContent = changes.stats.newValue.seen || 0;
-      statTranslated.textContent = changes.stats.newValue.translated || 0;
+    if (namespace === 'local') {
+      if (changes.stats) {
+        statSeen.textContent = changes.stats.newValue.seen || 0;
+        statTranslated.textContent = changes.stats.newValue.translated || 0;
+      }
+      if (changes.quizMetrics) {
+        updateQuizMetrics(changes.quizMetrics.newValue);
+      }
     }
   });
 
@@ -44,6 +54,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     viewGraphBtn.addEventListener('click', () => {
       chrome.runtime.openOptionsPage();
     });
+  }
+
+  function updateQuizMetrics(metrics) {
+    statCorrect.textContent = metrics.correct || 0;
+    statWrong.textContent = metrics.wrong || 0;
+    statHinted.textContent = metrics.hinted || 0;
+
+    const total = (metrics.correct || 0) + (metrics.wrong || 0);
+    const barCorrect = document.getElementById('quizBarCorrect');
+    const barWrong = document.getElementById('quizBarWrong');
+    const barHinted = document.getElementById('quizBarHinted');
+    const barContainer = document.getElementById('quizBar');
+
+    if (total === 0) {
+      barContainer.style.display = 'none';
+    } else {
+      barContainer.style.display = 'flex';
+      const pctCorrect = ((metrics.correct || 0) / total) * 100;
+      const pctWrong = ((metrics.wrong || 0) / total) * 100;
+      // Hinted is overlapping (a subset of correct+wrong), so show as % of total
+      const pctHinted = ((metrics.hinted || 0) / total) * 100;
+      barCorrect.style.width = pctCorrect + '%';
+      barWrong.style.width = pctWrong + '%';
+      // Show hinted as a separate small indicator bar below
+      barHinted.style.width = Math.min(pctHinted, 100) + '%';
+    }
   }
 
   function updateDifficultyDesc(level) {

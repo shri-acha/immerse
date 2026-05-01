@@ -16,11 +16,31 @@ async function init() {
   stats = data.stats || { seen: 0, translated: 0 };
 
   if (isLearningMode) {
-    processDOM(document.body);
+    await processDOM(document.body);
     setupObserver();
+    setupQuizListeners();
   } else {
     setupHighlightToTranslate();
   }
+}
+
+// --- Quiz Click Listeners ---
+function setupQuizListeners() {
+  document.addEventListener('click', (e) => {
+    const wrapper = e.target.closest('.tamang-tooltip-wrapper');
+    if (!wrapper) return;
+    if (!window.__tamangQuiz) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const original = wrapper.getAttribute('data-original');
+    const translated = wrapper.textContent.trim();
+
+    if (original && translated) {
+      window.__tamangQuiz.create(original, translated);
+    }
+  });
 }
 
 // Listen for settings changes from popup

@@ -119,7 +119,6 @@ async function translateText(text, srcLang, tgtLang) {
 // Listen for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'translate') {
-    // We must return true to indicate we will respond asynchronously
     translateText(request.text, request.srcLang, request.tgtLang)
       .then(translatedText => sendResponse({ text: translatedText }))
       .catch(err => {
@@ -128,4 +127,76 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true; 
   }
+
+  if (request.action === 'quiz_result') {
+    handleQuizResult(request).then(() => sendResponse({ ok: true }));
+    return true;
+  }
 });
+
+// --- Quiz Result Handler ---
+async function handleQuizResult({ word, status, hintsUsed }) {
+  const data = await chrome.storage.local.get(['xp', 'streak', 'streakBest', 'todayXP', 'lastQuizDate', 'wordStats', 'quizMetrics']);
+  
+  let xp = data.xp || 0;
+  let streak = data.streak || 0;
+  let streakBest = data.streakBest || 0;
+  let todayXP = data.todayXP || 0;
+  let lastQuizDate = data.lastQuizDate || '';
+  let wordStats = data.wordStats || {};
+  let quizMetrics = data.quizMetrics || { correct: 0, wrong: 0, hinted: 0 };
+
+  const today = new Date().toISOString().split('T')[0];
+  if (lastQuizDate !== today) {
+    todayXP = 0;
+    lastQuizDate = today;
+  }
+
+  // Calculate XP
+  let earned = 0;
+  if (status === 'correct') {
+    earned = Math.max(1, 10 - (hintsUsed * 3));
+    streak++;
+  } else if (status === 'close') {
+    earned = Math.max(1, 5 - (hintsUsed * 3));
+    streak++;
+  } else if (status === 'shown') {
+    earned = 0;
+    streak = 0;
+  } else {
+    earned = 0;
+    streak = 0;
+  }
+
+  xp += earned;
+  todayXP += earned;
+  if (streak > streakBest) streakBest = streak;
+
+  // Track aggregate quiz metrics
+  if (status === 'correct' || status === 'close') {
+    quizMetrics.correct++;
+  } else {
+    quizMetrics.wrong++;
+  }
+  if (hintsUsed > 0) {
+    quizMetrics.hinted++;
+  }
+
+  // Track per-word stats
+  if (!wordStats[word]) {
+    wordStats[word] = { correct: 0, incorrect: 0, hinted: 0, lastSeen: '' };
+  }
+  wordStats[word].lastSeen = new Date().toISOString();
+  if (status === 'correct' || status === 'close') {
+    wordStats[word].correct++;
+  } else {
+    wordStats[word].incorrect++;
+  }
+  if (hintsUsed > 0) {
+    wordStats[word].hinted++;
+  }
+
+  await chrome.storage.local.set({ xp, streak, streakBest, todayXP, lastQuizDate, wordStats, quizMetrics });
+  
+  console.log(`[Tamang Immersion] 🎯 Quiz: "${word}" → ${status} | +${earned} XP | Streak: ${streak} | Total XP: ${xp} | Metrics: ✅${quizMetrics.correct} ❌${quizMetrics.wrong} 💡${quizMetrics.hinted}`);
+}
