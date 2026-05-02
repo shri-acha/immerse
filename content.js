@@ -276,12 +276,25 @@ function showResult(x, y, original, translated) {
   }
 
   resultBox.innerHTML = `
-    <span class="original">${original}</span>
-    <span class="translated">${translated}</span>
+    <div class="tamang-result-row">
+      <span class="original">${original}</span>
+      <button class="tamang-tts-btn" data-text="${original}" data-lang="en-US" title="Listen">🔊</button>
+    </div>
+    <div class="tamang-result-row">
+      <span class="translated">${translated}</span>
+      <button class="tamang-tts-btn" data-text="${translated}" data-lang="ne-NP" title="Listen">🔊</button>
+    </div>
   `;
   resultBox.style.left = `${x + 10}px`;
   resultBox.style.top = `${y + 10}px`;
   resultBox.style.display = 'block';
+
+  resultBox.querySelectorAll('.tamang-tts-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      playTTS(btn.getAttribute('data-text'), btn.getAttribute('data-lang'));
+    };
+  });
 }
 
 function hidePopups() {
@@ -293,6 +306,16 @@ function handleClickOutside(e) {
   if (popupBtn && popupBtn.contains(e.target)) return;
   if (resultBox && resultBox.contains(e.target)) return;
   hidePopups();
+}
+
+// --- Text-to-Speech ---
+function playTTS(text, lang) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.9;
+  window.speechSynthesis.speak(utterance);
 }
 
 // Start

@@ -227,6 +227,16 @@
     }
   }
 
+  // --- Text-to-Speech ---
+  function playTTS(text, lang) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  }
+
   // --- Create the Quiz Overlay ---
   function createQuizOverlay(originalWord, translatedWord) {
     if (currentQuiz) destroyQuizOverlay();
@@ -237,6 +247,9 @@
     const promptLabel = isReverse ? 'What does this mean in English?' : 'Translate to Tamang:';
     const correctAnswers = isReverse ? [originalWord] : [translatedWord];
     const needsDevanagari = !isReverse; // English→Tamang needs Devanagari input
+
+    const promptLang = isReverse ? 'ne-NP' : 'en-US';
+    const answerLang = isReverse ? 'en-US' : 'ne-NP';
 
     console.log(`[Tamang Quiz] [CREATE] Quiz created: "${originalWord}" <-> "${translatedWord}" | Direction: ${isReverse ? 'Tamang->English' : 'English->Tamang'} | Devanagari input: ${needsDevanagari}`);
 
@@ -253,7 +266,10 @@
         <span class="tq-badge">${isReverse ? 'Tamang > English' : 'English > Tamang'}</span>
         <button class="tq-close" aria-label="Close">&times;</button>
       </div>
-      <div class="tq-prompt">${promptWord}</div>
+      <div class="tq-prompt-container">
+        <div class="tq-prompt">${promptWord}</div>
+        <button class="tq-tts-btn" data-text="${promptWord}" data-lang="${promptLang}" aria-label="Listen" title="Listen">🔊</button>
+      </div>
       <div class="tq-label">${promptLabel}</div>
       <input type="text" class="tq-input" placeholder="${needsDevanagari ? 'Type in Romanized (e.g. namaste)...' : 'Type your answer...'}" autocomplete="off" spellcheck="false">
       ${needsDevanagari ? '<div class="tq-transliteration-hint">Romanized input active - type in English, see Devanagari</div>' : ''}
@@ -285,6 +301,24 @@
       devanagariHandler = enableDevanagariInput(input);
     }
 
+    // TTS bindings
+    const promptTTSBtn = card.querySelector('.tq-tts-btn');
+    if (promptTTSBtn) {
+      promptTTSBtn.addEventListener('click', () => {
+        playTTS(promptTTSBtn.getAttribute('data-text'), promptTTSBtn.getAttribute('data-lang'));
+      });
+    }
+
+    function attachFeedbackTTSListener() {
+      const btn = feedback.querySelector('.tq-tts-btn-small');
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playTTS(btn.getAttribute('data-text'), btn.getAttribute('data-lang'));
+        });
+      }
+    }
+
     // Focus input
     setTimeout(() => input.focus(), 100);
 
@@ -302,17 +336,19 @@
 
       if (result.status === 'correct') {
         feedback.className = 'tq-feedback tq-correct';
-        feedback.innerHTML = `<span class="tq-icon">Correct!</span>`;
+        feedback.innerHTML = `<span class="tq-icon">Correct!</span> <button class="tq-tts-btn-small" data-text="${correctAnswers[0]}" data-lang="${answerLang}" title="Listen">🔊</button>`;
         input.classList.add('tq-input-correct');
       } else if (result.status === 'close') {
         feedback.className = 'tq-feedback tq-close-answer';
-        feedback.innerHTML = `<span class="tq-icon">Close!</span> The answer is: <strong>${result.corrected}</strong>`;
+        feedback.innerHTML = `<span class="tq-icon">Close!</span> The answer is: <strong>${result.corrected}</strong> <button class="tq-tts-btn-small" data-text="${result.corrected}" data-lang="${answerLang}" title="Listen">🔊</button>`;
         input.classList.add('tq-input-close');
       } else {
         feedback.className = 'tq-feedback tq-incorrect';
-        feedback.innerHTML = `<span class="tq-icon">Wrong.</span> The answer is: <strong>${result.corrected}</strong>`;
+        feedback.innerHTML = `<span class="tq-icon">Wrong.</span> The answer is: <strong>${result.corrected}</strong> <button class="tq-tts-btn-small" data-text="${result.corrected}" data-lang="${answerLang}" title="Listen">🔊</button>`;
         input.classList.add('tq-input-incorrect');
       }
+
+      attachFeedbackTTSListener();
 
       // Send result to background
       sendQuizResult(originalWord, result.status, hintLevel);
@@ -361,9 +397,11 @@
 
       feedback.style.display = 'block';
       feedback.className = 'tq-feedback tq-shown';
-      feedback.innerHTML = `<span class="tq-icon">Answer:</span> <strong>${correctAnswers[0]}</strong>`;
+      feedback.innerHTML = `<span class="tq-icon">Answer:</span> <strong>${correctAnswers[0]}</strong> <button class="tq-tts-btn-small" data-text="${correctAnswers[0]}" data-lang="${answerLang}" title="Listen">🔊</button>`;
       input.value = correctAnswers[0];
       input.classList.add('tq-input-shown');
+
+      attachFeedbackTTSListener();
 
       checkBtn.disabled = true;
       hintBtn.disabled = true;
