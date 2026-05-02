@@ -6,7 +6,7 @@ It tracks your vocabulary exposure, reinforces learning through active recall qu
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 ### 1. Passive Immersion (Smart Text Replacement)
 Immerse securely scans the text of the websites you visit and replaces a percentage of the words with Tamang translations. The frequency of these replacements is controlled by a **Difficulty Slider** in the extension popup. Hover over any translated word to see the original text.
@@ -31,7 +31,7 @@ Immerse tracks every unique word you've learned. By opening the extension's **Op
 
 ---
 
-## 🏗️ Architecture & Technology Stack
+## Architecture & Technology Stack
 
 Built natively on **Chrome Manifest V3**, Immerse utilizes modern browser APIs and pure Vanilla JavaScript/CSS for maximum performance without heavy framework overhead.
 
@@ -73,7 +73,7 @@ graph TD
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Google Chrome (or any Chromium-based browser like Edge, Brave).
@@ -104,5 +104,5 @@ graph TD
 
 ---
 
-## 📄 License
+## License
 This project is provided as-is for educational and research purposes. Translations are powered by the [Tamang Machine Translation (TMT) API](https://tmt.ilprl.ku.edu.np) developed by Kathmandu University.
