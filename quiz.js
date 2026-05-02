@@ -234,6 +234,20 @@
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
     utterance.rate = 0.9;
+    
+    const voices = window.speechSynthesis.getVoices();
+    if (lang === 'ne-NP' || lang === 'tmg') {
+      // Priority: Nepali -> Hindi -> Indian English fallback
+      const bestVoice = voices.find(v => v.lang.toLowerCase().startsWith('ne')) || 
+                        voices.find(v => v.lang.toLowerCase().startsWith('hi')) || 
+                        voices.find(v => v.lang.toLowerCase() === 'en-in' || v.lang.toLowerCase().includes('-in'));
+      if (bestVoice) utterance.voice = bestVoice;
+    } else {
+      const enVoice = voices.find(v => v.lang.toLowerCase().startsWith('en-us')) || 
+                      voices.find(v => v.lang.toLowerCase().startsWith('en'));
+      if (enVoice) utterance.voice = enVoice;
+    }
+
     window.speechSynthesis.speak(utterance);
   }
 

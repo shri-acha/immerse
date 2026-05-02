@@ -59,17 +59,41 @@ function trackVocabulary(text) {
   processTrackingQueue();
 }
 
+const gtCache = new Map();
+
+async function translateToEnglish(text) {
+  if (gtCache.has(text)) return gtCache.get(text);
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const result = data[0].map(x => x[0]).join('');
+    gtCache.set(text, result);
+    return result;
+  } catch (e) {
+    console.error("[Tamang Immersion] [ERROR] Google Translate error:", e);
+    return text;
+  }
+}
+
 // Helper to interact with the TMT API
 async function translateText(text, srcLang, tgtLang) {
-  const cacheKey = `${srcLang}-${tgtLang}:${text}`;
-  let translatedText = text;
+  // First, force an intermediate translation to English to support source languages like Chinese, French, etc.
+  let englishText = await translateToEnglish(text);
+
+  if (tgtLang === 'en') {
+    return englishText;
+  }
+
+  const cacheKey = `en-${tgtLang}:${englishText}`;
+  let translatedText = englishText;
 
   if (translationCache.has(cacheKey)) {
-    console.log(`[Tamang Immersion] [CACHE] Hit for: "${text}"`);
+    console.log(`[Tamang Immersion] [CACHE] Hit for: "${englishText}"`);
     translatedText = translationCache.get(cacheKey);
   } else {
     try {
-      console.log(`[Tamang Immersion] [API] Call for: "${text}"`);
+      console.log(`[Tamang Immersion] [API] Call TMT for: "${englishText}" (Original: "${text}")`);
       const response = await fetch("https://tmt.ilprl.ku.edu.np/lang-translate", {
         method: "POST",
         headers: {
@@ -77,8 +101,8 @@ async function translateText(text, srcLang, tgtLang) {
           "Authorization": "Bearer " + config.TMT_API_KEY
         },
         body: JSON.stringify({
-          text: text,
-          src_lang: srcLang,
+          text: englishText,
+          src_lang: 'en', // Intermediate is always English
           tgt_lang: tgtLang
         })
       });
@@ -91,26 +115,27 @@ async function translateText(text, srcLang, tgtLang) {
       if (data.message_type === "SUCCESS") {
         translatedText = data.output;
         
-        // Validate translation length — overly long output for a single word is likely an API error
-        const isSingleWord = text.trim().split(/\s+/).length === 1;
+        // Validate translation length
+        const isSingleWord = englishText.trim().split(/\s+/).length === 1;
         if (isSingleWord && translatedText.length > 50) {
-          console.warn(`[Tamang Immersion] [WARN] Translation too long (${translatedText.length} chars) for single word, marking as error: "${text}"`);
+          console.warn(`[Tamang Immersion] [WARN] Translation too long (${translatedText.length} chars), marking as error: "${englishText}"`);
           translatedText = '<error-in-translation>';
         } else {
           console.log(`[Tamang Immersion] [OK] API Success: "${translatedText}"`);
+          translationCache.set(cacheKey, translatedText);
         }
-        
-        translationCache.set(cacheKey, translatedText);
       } else {
         console.error(`[Tamang Immersion] [ERROR] TMT Error:`, data.message);
+        translatedText = text; // fallback to original
       }
     } catch (error) {
       console.error(`[Tamang Immersion] [ERROR] Translation API request failed:`, error);
+      translatedText = text; // fallback to original
     }
   }
 
-  // Only track successful translations
-  if (translatedText && translatedText !== text) {
+  // Only track successful translations that are different from the source
+  if (translatedText && translatedText !== text && translatedText !== englishText && translatedText !== '<error-in-translation>') {
     trackVocabulary(text);
   }
 

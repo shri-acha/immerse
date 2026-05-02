@@ -91,7 +91,10 @@ async function processDOM(rootNode) {
           if (IGNORED_TAGS.has(parent.tagName) || parent.isContentEditable) {
             return NodeFilter.FILTER_REJECT;
           }
-          if (parent.classList && parent.classList.contains('tamang-tooltip-wrapper')) {
+          if (parent.id === 'tamang-translate-popup' || parent.id === 'tamang-translate-result') {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (parent.classList && (parent.classList.contains('tamang-tooltip-wrapper') || parent.classList.contains('tamang-quiz-backdrop'))) {
              return NodeFilter.FILTER_REJECT;
           }
           parent = parent.parentNode;
@@ -315,6 +318,20 @@ function playTTS(text, lang) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
   utterance.rate = 0.9;
+  
+  const voices = window.speechSynthesis.getVoices();
+  if (lang === 'ne-NP' || lang === 'tmg') {
+    // Priority: Nepali -> Hindi -> Indian English fallback
+    const bestVoice = voices.find(v => v.lang.toLowerCase().startsWith('ne')) || 
+                      voices.find(v => v.lang.toLowerCase().startsWith('hi')) || 
+                      voices.find(v => v.lang.toLowerCase() === 'en-in' || v.lang.toLowerCase().includes('-in'));
+    if (bestVoice) utterance.voice = bestVoice;
+  } else {
+    const enVoice = voices.find(v => v.lang.toLowerCase().startsWith('en-us')) || 
+                    voices.find(v => v.lang.toLowerCase().startsWith('en'));
+    if (enVoice) utterance.voice = enVoice;
+  }
+
   window.speechSynthesis.speak(utterance);
 }
 
