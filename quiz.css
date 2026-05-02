@@ -242,3 +242,16 @@
 .tq-feedback strong {
   color: #f8fafc;
 }
+
+/* Transliteration hint */
+.tq-transliteration-hint {
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}

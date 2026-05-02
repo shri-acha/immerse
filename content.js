@@ -244,7 +244,7 @@ function showTranslateButton(x, y, text) {
   if (!popupBtn) {
     popupBtn = document.createElement('div');
     popupBtn.id = 'tamang-translate-popup';
-    popupBtn.textContent = '🔄 Translate to Tamang';
+    popupBtn.textContent = 'Translate to Tamang';
     document.body.appendChild(popupBtn);
   }
 

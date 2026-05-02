@@ -261,8 +261,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let freqText = `Seen ${node.freq} time${node.freq > 1 ? 's' : ''} during immersion`;
     const ws = wordStats[node.id];
     if (ws && (ws.correct > 0 || ws.incorrect > 0)) {
-      freqText += ` · Quiz: ✅ ${ws.correct}  ❌ ${ws.incorrect}`;
-      if (ws.hinted > 0) freqText += `  💡 ${ws.hinted}`;
+      freqText += ` | Quiz: C:${ws.correct} W:${ws.incorrect}`;
+      if (ws.hinted > 0) freqText += ` H:${ws.hinted}`;
     }
     detailFreqEl.textContent = freqText;
 
