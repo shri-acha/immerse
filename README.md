@@ -11,11 +11,18 @@ It tracks your vocabulary exposure, reinforces learning through active recall qu
 ### 1. Passive Immersion (Smart Text Replacement)
 Immerse securely scans the text of the websites you visit and replaces a percentage of the words with Tamang translations. The frequency of these replacements is controlled by a **Difficulty Slider** in the extension popup. Hover over any translated word to see the original text.
 
+<img width="295" height="117" alt="2026-05-02_22-04" src="https://github.com/user-attachments/assets/b434e3cc-67ba-4ae0-beb6-86cd177d1eed" />
+
+
 ### 2. Multi-Language Base Support
 You aren't restricted to learning Tamang from English! Immerse features a robust **Double-Hop Translation Engine**. If you select German, French, or Chinese as your Base Language:
 - The extension captures the foreign text.
 - It uses the Google Translate API to convert it to an intermediate English string.
 - It then queries the Tamang Machine Translation (TMT) API to accurately translate the English into Tamang.
+
+
+<img width="419" height="532" alt="2026-05-02_23-49" src="https://github.com/user-attachments/assets/6445c366-4b20-4ba5-83c0-d3ecbd4c3ee5" />
+
 
 ### 3. Active Recall Quizzes & Gamification
 Learning passively isn't enough to achieve fluency. When you interact with translated words, the extension occasionally challenges you with **Interactive Quiz Cards**. 
@@ -23,11 +30,18 @@ Learning passively isn't enough to achieve fluency. When you interact with trans
 - The quizzes feature a **Romanized Devanagari Engine** that automatically converts your Latin keystrokes into Devanagari script when typing Tamang answers.
 - As you complete quizzes, you earn **XP**, maintain daily **streaks**, and track your accuracy.
 
+<img width="854" height="569" alt="2026-05-02_21-56" src="https://github.com/user-attachments/assets/a30fbe8b-daeb-4b16-9fb1-b74bb03977cb" />
+
+
 ### 4. Native Text-To-Speech (TTS)
 When interacting with words or quizzes, you can click the speaker icon to hear the pronunciation. Immerse dynamically hooks into your operating system's native voices based on your Base Language (e.g., `de-DE` for German, `zh-CN` for Chinese) while using a localized Nepali fallback for Tamang.
 
 ### 5. Vocabulary Knowledge Graph
 Immerse tracks every unique word you've learned. By opening the extension's **Options Page**, you can view an interactive, force-directed **Knowledge Graph** visualizing your entire vocabulary network, along with charts detailing your quiz performance. 
+
+
+<img width="1676" height="892" alt="2026-04-30_22-53" src="https://github.com/user-attachments/assets/e55e731a-2878-45ad-b6dd-29061ef3d474" />
+
 
 ---
 
