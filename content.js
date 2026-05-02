@@ -29,9 +29,9 @@ async function init() {
 // --- Quiz Click Listeners ---
 function setupQuizListeners() {
   document.addEventListener('click', (e) => {
-    const wrapper = e.target.closest('.tamang-tooltip-wrapper');
+    const wrapper = e.target.closest('.immerse-tooltip-wrapper');
     if (!wrapper) return;
-    if (!window.__tamangQuiz) return;
+    if (!window.__immerseQuiz) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -40,7 +40,7 @@ function setupQuizListeners() {
     const translated = wrapper.textContent.trim();
 
     if (original && translated) {
-      window.__tamangQuiz.create(original, translated);
+      window.__immerseQuiz.create(original, translated);
     }
   });
 }
@@ -94,10 +94,10 @@ async function processDOM(rootNode) {
           if (IGNORED_TAGS.has(parent.tagName) || parent.isContentEditable) {
             return NodeFilter.FILTER_REJECT;
           }
-          if (parent.id === 'tamang-translate-popup' || parent.id === 'tamang-translate-result') {
+          if (parent.id === 'immerse-translate-popup' || parent.id === 'immerse-translate-result') {
             return NodeFilter.FILTER_REJECT;
           }
-          if (parent.classList && (parent.classList.contains('tamang-tooltip-wrapper') || parent.classList.contains('tamang-quiz-backdrop'))) {
+          if (parent.classList && (parent.classList.contains('immerse-tooltip-wrapper') || parent.classList.contains('immerse-quiz-backdrop'))) {
              return NodeFilter.FILTER_REJECT;
           }
           parent = parent.parentNode;
@@ -137,7 +137,7 @@ async function processDOM(rootNode) {
             if (translated && translated !== sentence.trim()) {
               stats.translated++;
               const wrapper = document.createElement('span');
-              wrapper.className = 'tamang-tooltip-wrapper';
+              wrapper.className = 'immerse-tooltip-wrapper';
               wrapper.setAttribute('data-original', sentence.trim());
               wrapper.textContent = translated + " ";
               fragment.appendChild(wrapper);
@@ -173,7 +173,7 @@ async function processDOM(rootNode) {
                    if (translated && translated.trim().toLowerCase() !== token.toLowerCase()) {
                      stats.translated++;
                      const wrapper = document.createElement('span');
-                     wrapper.className = 'tamang-tooltip-wrapper';
+                     wrapper.className = 'immerse-tooltip-wrapper';
                      wrapper.setAttribute('data-original', token);
                      wrapper.textContent = translated;
                      newSentenceFragment.appendChild(wrapper);
@@ -249,7 +249,7 @@ function handleSelection(e) {
 function showTranslateButton(x, y, text) {
   if (!popupBtn) {
     popupBtn = document.createElement('div');
-    popupBtn.id = 'tamang-translate-popup';
+    popupBtn.id = 'immerse-translate-popup';
     popupBtn.textContent = 'Translate to Tamang';
     document.body.appendChild(popupBtn);
   }
@@ -277,7 +277,7 @@ function showResult(x, y, original, translated) {
 
   if (!resultBox) {
     resultBox = document.createElement('div');
-    resultBox.id = 'tamang-translate-result';
+    resultBox.id = 'immerse-translate-result';
     document.body.appendChild(resultBox);
   }
 
@@ -287,20 +287,20 @@ function showResult(x, y, original, translated) {
   else if (baseLanguage === 'zh-CN') originalTTSLang = 'zh-CN';
 
   resultBox.innerHTML = `
-    <div class="tamang-result-row">
+    <div class="immerse-result-row">
       <span class="original">${original}</span>
-      <button class="tamang-tts-btn" data-text="${original}" data-lang="${originalTTSLang}" title="Listen">🔊</button>
+      <button class="immerse-tts-btn" data-text="${original}" data-lang="${originalTTSLang}" title="Listen">🔊</button>
     </div>
-    <div class="tamang-result-row">
+    <div class="immerse-result-row">
       <span class="translated">${translated}</span>
-      <button class="tamang-tts-btn" data-text="${translated}" data-lang="ne-NP" title="Listen">🔊</button>
+      <button class="immerse-tts-btn" data-text="${translated}" data-lang="ne-NP" title="Listen">🔊</button>
     </div>
   `;
   resultBox.style.left = `${x + 10}px`;
   resultBox.style.top = `${y + 10}px`;
   resultBox.style.display = 'block';
 
-  resultBox.querySelectorAll('.tamang-tts-btn').forEach(btn => {
+  resultBox.querySelectorAll('.immerse-tts-btn').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       playTTS(btn.getAttribute('data-text'), btn.getAttribute('data-lang'));

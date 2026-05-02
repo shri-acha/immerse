@@ -23,8 +23,8 @@ try {
         }
       }
     });
-    console.log('[Tamang Immersion] Loaded .env config successfully.');
+    console.log('[Immerse] Loaded .env config successfully.');
   }
 } catch (error) {
-  console.warn("[Tamang Immersion] Could not load .env file at runtime. Falling back to empty keys.", error);
+  console.warn("[Immerse] Could not load .env file at runtime. Falling back to empty keys.", error);
 }

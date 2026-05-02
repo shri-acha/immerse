@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const dictResponse = await fetch(chrome.runtime.getURL('data/nepali_dict.json'));
     nepaliDict = await dictResponse.json();
-    console.log(`[Tamang Immersion] Loaded ${Object.keys(nepaliDict).length} Nepali dictionary entries`);
+    console.log(`[Immerse] Loaded ${Object.keys(nepaliDict).length} Nepali dictionary entries`);
   } catch (err) {
-    console.error('[Tamang Immersion] Failed to load Nepali dictionary:', err);
+    console.error('[Immerse] Failed to load Nepali dictionary:', err);
   }
 
   const uw = document.getElementById('uniqueWords');

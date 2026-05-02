@@ -1,5 +1,5 @@
 /* Tooltip Base Styles */
-.tamang-tooltip-wrapper {
+.immerse-tooltip-wrapper {
   position: relative;
   display: inline-block;
   cursor: pointer;
@@ -9,7 +9,7 @@
   transition: all 0.2s ease-in-out;
 }
 
-.tamang-tooltip-wrapper:hover {
+.immerse-tooltip-wrapper:hover {
   background-color: rgba(74, 222, 128, 0.1);
   border-bottom-color: #16a34a;
 }
@@ -18,7 +18,7 @@
 
 
 /* Floating Translate Button (for non-learning mode highlight) */
-#tamang-translate-popup {
+#immerse-translate-popup {
   position: absolute;
   background: #0f172a;
   color: #f8fafc;
@@ -37,17 +37,17 @@
   user-select: none;
 }
 
-#tamang-translate-popup:hover {
+#immerse-translate-popup:hover {
   background: #1e293b;
   transform: scale(1.05);
 }
 
-#tamang-translate-popup.loading {
+#immerse-translate-popup.loading {
   opacity: 0.8;
   cursor: wait;
 }
 
-#tamang-translate-result {
+#immerse-translate-result {
   position: absolute;
   background: #0f172a;
   color: #4ade80; /* Success green */
@@ -62,26 +62,26 @@
   line-height: 1.5;
 }
 
-#tamang-translate-result .tamang-result-row {
+#immerse-translate-result .immerse-result-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-#tamang-translate-result .tamang-result-row:first-child {
+#immerse-translate-result .immerse-result-row:first-child {
   margin-bottom: 4px;
   border-bottom: 1px solid #334155;
   padding-bottom: 4px;
 }
 
-#tamang-translate-result .original {
+#immerse-translate-result .original {
   display: block;
   font-size: 12px;
   color: #94a3b8;
 }
 
-.tamang-tts-btn {
+.immerse-tts-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -96,7 +96,7 @@
   color: #94a3b8;
 }
 
-.tamang-tts-btn:hover {
+.immerse-tts-btn:hover {
   opacity: 1;
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.1);

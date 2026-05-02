@@ -45,9 +45,9 @@ async function processTrackingQueue() {
     
     if (modified) {
       await chrome.storage.local.set({ vocabulary: vocab, edges: edg });
-      console.log(`[Tamang Immersion] [GRAPH] Updated Knowledge Graph! Total Unique Words: ${Object.keys(vocab).length}`);
+      console.log(`[Immerse] [GRAPH] Updated Knowledge Graph! Total Unique Words: ${Object.keys(vocab).length}`);
     } else {
-      console.log(`[Tamang Immersion] [INFO] No new words added from text.`);
+      console.log(`[Immerse] [INFO] No new words added from text.`);
     }
   }
   
@@ -72,7 +72,7 @@ async function translateToEnglish(text, srcLang) {
     gtCache.set(text, result);
     return result;
   } catch (e) {
-    console.error("[Tamang Immersion] [ERROR] Google Translate error:", e);
+    console.error("[Immerse] [ERROR] Google Translate error:", e);
     return text;
   }
 }
@@ -90,11 +90,11 @@ async function translateText(text, srcLang, tgtLang) {
   let translatedText = englishText;
 
   if (translationCache.has(cacheKey)) {
-    console.log(`[Tamang Immersion] [CACHE] Hit for: "${englishText}"`);
+    console.log(`[Immerse] [CACHE] Hit for: "${englishText}"`);
     translatedText = translationCache.get(cacheKey);
   } else {
     try {
-      console.log(`[Tamang Immersion] [API] Call TMT for: "${englishText}" (Original: "${text}", srcLang: ${srcLang})`);
+      console.log(`[Immerse] [API] Call TMT for: "${englishText}" (Original: "${text}", srcLang: ${srcLang})`);
       const response = await fetch("https://tmt.ilprl.ku.edu.np/lang-translate", {
         method: "POST",
         headers: {
@@ -119,18 +119,18 @@ async function translateText(text, srcLang, tgtLang) {
         // Validate translation length
         const isSingleWord = englishText.trim().split(/\s+/).length === 1;
         if (isSingleWord && translatedText.length > 50) {
-          console.warn(`[Tamang Immersion] [WARN] Translation too long (${translatedText.length} chars), marking as error: "${englishText}"`);
+          console.warn(`[Immerse] [WARN] Translation too long (${translatedText.length} chars), marking as error: "${englishText}"`);
           translatedText = '<error-in-translation>';
         } else {
-          console.log(`[Tamang Immersion] [OK] API Success: "${translatedText}"`);
+          console.log(`[Immerse] [OK] API Success: "${translatedText}"`);
           translationCache.set(cacheKey, translatedText);
         }
       } else {
-        console.error(`[Tamang Immersion] [ERROR] TMT Error:`, data.message);
+        console.error(`[Immerse] [ERROR] TMT Error:`, data.message);
         translatedText = text; // fallback to original
       }
     } catch (error) {
-      console.error(`[Tamang Immersion] [ERROR] Translation API request failed:`, error);
+      console.error(`[Immerse] [ERROR] Translation API request failed:`, error);
       translatedText = text; // fallback to original
     }
   }
@@ -156,11 +156,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === 'quiz_result') {
-    console.log(`[Tamang Immersion] [RECV] Received quiz_result message:`, JSON.stringify(request));
+    console.log(`[Immerse] [RECV] Received quiz_result message:`, JSON.stringify(request));
     handleQuizResult(request)
       .then(() => sendResponse({ ok: true }))
       .catch(err => {
-        console.error(`[Tamang Immersion] [ERROR] handleQuizResult failed:`, err);
+        console.error(`[Immerse] [ERROR] handleQuizResult failed:`, err);
         sendResponse({ ok: false, error: err.message });
       });
     return true;
@@ -169,7 +169,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // --- Quiz Result Handler ---
 async function handleQuizResult({ word, status, hintsUsed }) {
-  console.log(`[Tamang Immersion] [QUIZ] Processing quiz result: word="${word}" status="${status}" hintsUsed=${hintsUsed}`);
+  console.log(`[Immerse] [QUIZ] Processing quiz result: word="${word}" status="${status}" hintsUsed=${hintsUsed}`);
 
   const data = await chrome.storage.local.get(['xp', 'streak', 'streakBest', 'todayXP', 'lastQuizDate', 'wordStats', 'quizMetrics']);
   
@@ -181,7 +181,7 @@ async function handleQuizResult({ word, status, hintsUsed }) {
   let wordStats = data.wordStats || {};
   let quizMetrics = data.quizMetrics || { correct: 0, wrong: 0, hinted: 0 };
 
-  console.log(`[Tamang Immersion] [METRICS] Before update - quizMetrics:`, JSON.stringify(quizMetrics));
+  console.log(`[Immerse] [METRICS] Before update - quizMetrics:`, JSON.stringify(quizMetrics));
 
   const today = new Date().toISOString().split('T')[0];
   if (lastQuizDate !== today) {
@@ -212,14 +212,14 @@ async function handleQuizResult({ word, status, hintsUsed }) {
   // Track aggregate quiz metrics
   if (status === 'correct' || status === 'close') {
     quizMetrics.correct++;
-    console.log(`[Tamang Immersion] [+CORRECT] Incremented correct -> ${quizMetrics.correct}`);
+    console.log(`[Immerse] [+CORRECT] Incremented correct -> ${quizMetrics.correct}`);
   } else {
     quizMetrics.wrong++;
-    console.log(`[Tamang Immersion] [+WRONG] Incremented wrong -> ${quizMetrics.wrong}`);
+    console.log(`[Immerse] [+WRONG] Incremented wrong -> ${quizMetrics.wrong}`);
   }
   if (hintsUsed > 0) {
     quizMetrics.hinted++;
-    console.log(`[Tamang Immersion] [+HINTED] Incremented hinted -> ${quizMetrics.hinted}`);
+    console.log(`[Immerse] [+HINTED] Incremented hinted -> ${quizMetrics.hinted}`);
   }
 
   // Track per-word stats
@@ -236,10 +236,10 @@ async function handleQuizResult({ word, status, hintsUsed }) {
     wordStats[word].hinted++;
   }
 
-  console.log(`[Tamang Immersion] [METRICS] After update - quizMetrics:`, JSON.stringify(quizMetrics), `| wordStats["${word}"]:`, JSON.stringify(wordStats[word]));
+  console.log(`[Immerse] [METRICS] After update - quizMetrics:`, JSON.stringify(quizMetrics), `| wordStats["${word}"]:`, JSON.stringify(wordStats[word]));
 
   await chrome.storage.local.set({ xp, streak, streakBest, todayXP, lastQuizDate, wordStats, quizMetrics });
   
-  console.log(`[Tamang Immersion] [SAVE] Saved to storage successfully`);
-  console.log(`[Tamang Immersion] [QUIZ] "${word}" -> ${status} | +${earned} XP | Streak: ${streak} | Total XP: ${xp} | Metrics: C:${quizMetrics.correct} W:${quizMetrics.wrong} H:${quizMetrics.hinted}`);
+  console.log(`[Immerse] [SAVE] Saved to storage successfully`);
+  console.log(`[Immerse] [QUIZ] "${word}" -> ${status} | +${earned} XP | Streak: ${streak} | Total XP: ${xp} | Metrics: C:${quizMetrics.correct} W:${quizMetrics.wrong} H:${quizMetrics.hinted}`);
 }

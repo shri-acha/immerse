@@ -1,4 +1,4 @@
-# Tamang Immersion  
+# Immerse  
   
 A Chrome browser extension that helps you learn the **Tamang language** passively while browsing the web. It replaces English words on webpages with Tamang translations, tracks your vocabulary exposure, and reinforces learning through interactive quizzes.  
   
@@ -65,7 +65,7 @@ graph TD
 2. Open Chrome and navigate to `chrome://extensions/`.  
 3. Enable **Developer mode** (toggle in the top-right corner).  
 4. Click **Load unpacked** and select the cloned `immerse` directory.  
-5. The **Tamang Immersion** extension icon should appear in your toolbar.  
+5. The **Immerse** extension icon should appear in your toolbar.  
   
 ### Configuration  
   

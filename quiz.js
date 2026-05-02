@@ -1,5 +1,5 @@
 // ============================================================
-// Tamang Immersion — Active Recall Quiz System
+// Immerse — Active Recall Quiz System
 // ============================================================
 
 (function () {
@@ -212,18 +212,18 @@
       status: status,
       hintsUsed: hintLevel
     };
-    console.log(`[Tamang Quiz] [SEND] Sending quiz result:`, JSON.stringify(payload));
+    console.log(`[Immerse Quiz] [SEND] Sending quiz result:`, JSON.stringify(payload));
 
     try {
       chrome.runtime.sendMessage(payload, (response) => {
         if (chrome.runtime.lastError) {
-          console.error(`[Tamang Quiz] [ERROR] sendMessage error:`, chrome.runtime.lastError.message);
+          console.error(`[Immerse Quiz] [ERROR] sendMessage error:`, chrome.runtime.lastError.message);
         } else {
-          console.log(`[Tamang Quiz] [OK] Background acknowledged:`, response);
+          console.log(`[Immerse Quiz] [OK] Background acknowledged:`, response);
         }
       });
     } catch (e) {
-      console.error(`[Tamang Quiz] [ERROR] Failed to send quiz result:`, e);
+      console.error(`[Immerse Quiz] [ERROR] Failed to send quiz result:`, e);
     }
   }
 
@@ -279,15 +279,15 @@
     const promptLang = isReverse ? 'ne-NP' : baseTTSLang;
     const answerLang = isReverse ? baseTTSLang : 'ne-NP';
 
-    console.log(`[Tamang Quiz] [CREATE] Quiz created: "${originalWord}" <-> "${translatedWord}" | Direction: ${isReverse ? `Tamang->${langName}` : `${langName}->Tamang`} | Devanagari input: ${needsDevanagari}`);
+    console.log(`[Immerse Quiz] [CREATE] Quiz created: "${originalWord}" <-> "${translatedWord}" | Direction: ${isReverse ? `Tamang->${langName}` : `${langName}->Tamang`} | Devanagari input: ${needsDevanagari}`);
 
     // Backdrop
     const backdrop = document.createElement('div');
-    backdrop.className = 'tamang-quiz-backdrop';
+    backdrop.className = 'immerse-quiz-backdrop';
 
     // Card
     const card = document.createElement('div');
-    card.className = 'tamang-quiz-card';
+    card.className = 'immerse-quiz-card';
 
     card.innerHTML = `
       <div class="tq-header">
@@ -354,13 +354,13 @@
     function handleCheck() {
       if (answered) return;
       const userValue = input.value;
-      console.log(`[Tamang Quiz] [CHECK] Checking answer: "${userValue}" against: ${JSON.stringify(correctAnswers)}`);
+      console.log(`[Immerse Quiz] [CHECK] Checking answer: "${userValue}" against: ${JSON.stringify(correctAnswers)}`);
 
       const result = evaluateAnswer(userValue, correctAnswers);
       answered = true;
       feedback.style.display = 'block';
 
-      console.log(`[Tamang Quiz] [RESULT] ${result.status} | Hints used: ${hintLevel}`);
+      console.log(`[Immerse Quiz] [RESULT] ${result.status} | Hints used: ${hintLevel}`);
 
       if (result.status === 'correct') {
         feedback.className = 'tq-feedback tq-correct';
@@ -401,7 +401,7 @@
       if (answered) return;
       hintLevel++;
       const answer = correctAnswers[0];
-      console.log(`[Tamang Quiz] [HINT] Hint used (level ${hintLevel}) for "${originalWord}"`);
+      console.log(`[Immerse Quiz] [HINT] Hint used (level ${hintLevel}) for "${originalWord}"`);
 
       if (hintLevel === 1) {
         input.placeholder = `Starts with "${answer[0]}"...`;
@@ -421,7 +421,7 @@
     showBtn.addEventListener('click', () => {
       if (answered) return;
       answered = true;
-      console.log(`[Tamang Quiz] [SHOW] Show answer used for "${originalWord}" | Hints used: ${hintLevel}`);
+      console.log(`[Immerse Quiz] [SHOW] Show answer used for "${originalWord}" | Hints used: ${hintLevel}`);
 
       feedback.style.display = 'block';
       feedback.className = 'tq-feedback tq-shown';
@@ -463,7 +463,7 @@
   }
 
   // Expose to content.js
-  window.__tamangQuiz = {
+  window.__immerseQuiz = {
     create: createQuizOverlay,
     destroy: destroyQuizOverlay
   };

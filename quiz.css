@@ -1,8 +1,8 @@
 /* ============================================================
-   Tamang Immersion — Quiz Overlay Styles
+   Immerse — Quiz Overlay Styles
    ============================================================ */
 
-.tamang-quiz-backdrop {
+.immerse-quiz-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
@@ -14,7 +14,7 @@
   animation: tqFadeIn 0.2s ease-out;
 }
 
-.tamang-quiz-backdrop.tq-closing {
+.immerse-quiz-backdrop.tq-closing {
   animation: tqFadeOut 0.2s ease-in forwards;
 }
 
@@ -28,7 +28,7 @@
   to { opacity: 0; }
 }
 
-.tamang-quiz-card {
+.immerse-quiz-card {
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 16px;
@@ -41,7 +41,7 @@
   color: #f8fafc;
 }
 
-.tq-closing .tamang-quiz-card {
+.tq-closing .immerse-quiz-card {
   animation: tqSlideOut 0.2s ease-in forwards;
 }
 
