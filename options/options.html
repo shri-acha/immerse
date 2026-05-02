@@ -10,6 +10,43 @@
 </head>
 
 <body>
+  <div class="overlay">
+    <h1>TAMANG GRAPH</h1>
+    <div class="stats">
+      <span>Total Unique Words: <strong id="uniqueWords">0</strong></span>
+    </div>
+
+    <div class="quiz-metrics-panel">
+      <h3>QUIZ PERFORMANCE</h3>
+      <div class="metrics-row">
+        <canvas id="donutChart" width="80" height="80"></canvas>
+        <div class="metrics-numbers">
+          <div class="metric-item metric-correct">
+            <span class="metric-dot"></span>
+            <span class="metric-label">Correct</span>
+            <span class="metric-val" id="graphCorrect">0</span>
+          </div>
+          <div class="metric-item metric-wrong">
+            <span class="metric-dot"></span>
+            <span class="metric-label">Wrong</span>
+            <span class="metric-val" id="graphWrong">0</span>
+          </div>
+          <div class="metric-item metric-hinted">
+            <span class="metric-dot"></span>
+            <span class="metric-label">Hinted</span>
+            <span class="metric-val" id="graphHinted">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="node-legend">
+        <span class="legend-title">NODE COLORS:</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#22c55e;"></span>Mastered</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#fbbf24;"></span>Needs Practice</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#ef4444;"></span>Weak</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#333333;"></span>Untested</span>
+      </div>
+    </div>
+  </div>
   <canvas id="graphCanvas"></canvas>
   
   <div id="wordDetail" class="word-detail" style="display: none;">

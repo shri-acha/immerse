@@ -25,7 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('[Tamang Immersion] Failed to load Nepali dictionary:', err);
   }
 
-  // Unique words stat removed
+  const uw = document.getElementById('uniqueWords');
+  if (uw) uw.textContent = Object.keys(vocabulary).length;
 
   const nodes = [];
   const nodeMap = new Map();
@@ -39,20 +40,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   function getNodeColor(word, freq) {
     const ws = wordStats[word];
     if (!ws || (ws.correct === 0 && ws.incorrect === 0)) {
-      // Untested — blue tones
-      return `hsl(${215 + (freq / maxFreq) * 15}, 70%, 45%)`;
+      // Untested — dark grey
+      return '#333333';
     }
     const total = ws.correct + ws.incorrect;
     const ratio = ws.correct / total;
     if (ratio >= 0.75) {
       // Mastered — green
-      return `hsl(${142 + (ratio * 20)}, 75%, ${30 + ratio * 15}%)`;
+      return '#22c55e';
     } else if (ratio >= 0.4) {
       // Needs practice — amber/yellow
-      return `hsl(${38 + (ratio * 10)}, 85%, 42%)`;
+      return '#fbbf24';
     } else {
       // Weak — red
-      return `hsl(${0 + (ratio * 15)}, 75%, 45%)`;
+      return '#ef4444';
     }
   }
 
@@ -150,7 +151,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     wordDetailEl.style.display = 'none';
   });
 
-  // --- Quiz Metrics Donut Chart removed ---
+  // --- Quiz Metrics Donut Chart ---
+  function drawDonut(correct, wrong, hinted) {
+    const donutCanvas = document.getElementById('donutChart');
+    if (!donutCanvas) return;
+    const dCtx = donutCanvas.getContext('2d');
+    const cx = donutCanvas.width / 2;
+    const cy = donutCanvas.height / 2;
+    const outerR = 36;
+    const innerR = 22;
+    const total = correct + wrong;
+
+    dCtx.clearRect(0, 0, donutCanvas.width, donutCanvas.height);
+
+    if (total === 0) {
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR, 0, Math.PI * 2);
+      dCtx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
+      dCtx.fillStyle = '#333333';
+      dCtx.fill();
+
+      dCtx.fillStyle = '#888888';
+      dCtx.font = '700 11px Inter';
+      dCtx.textAlign = 'center';
+      dCtx.textBaseline = 'middle';
+      dCtx.fillText('N/A', cx, cy);
+      return;
+    }
+
+    const slices = [
+      { value: correct, color: '#22c55e' },
+      { value: wrong, color: '#ef4444' }
+    ];
+
+    let startAngle = -Math.PI / 2;
+    for (const slice of slices) {
+      if (slice.value === 0) continue;
+      const sliceAngle = (slice.value / total) * Math.PI * 2;
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR, startAngle, startAngle + sliceAngle);
+      dCtx.arc(cx, cy, innerR, startAngle + sliceAngle, startAngle, true);
+      dCtx.closePath();
+      dCtx.fillStyle = slice.color;
+      dCtx.fill();
+      startAngle += sliceAngle;
+    }
+
+    if (hinted > 0) {
+      const hintedAngle = Math.min((hinted / total) * Math.PI * 2, Math.PI * 2);
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR + 3, -Math.PI / 2, -Math.PI / 2 + hintedAngle);
+      dCtx.strokeStyle = '#fbbf24';
+      dCtx.lineWidth = 3;
+      dCtx.lineCap = 'round';
+      dCtx.stroke();
+    }
+
+    const pct = Math.round((correct / total) * 100);
+    dCtx.fillStyle = '#ffffff';
+    dCtx.font = '700 13px Inter';
+    dCtx.textAlign = 'center';
+    dCtx.textBaseline = 'middle';
+    dCtx.fillText(pct + '%', cx, cy);
+  }
+
+  const gc = document.getElementById('graphCorrect');
+  const gw = document.getElementById('graphWrong');
+  const gh = document.getElementById('graphHinted');
+  if (gc) gc.textContent = quizMetrics.correct;
+  if (gw) gw.textContent = quizMetrics.wrong;
+  if (gh) gh.textContent = quizMetrics.hinted;
+  drawDonut(quizMetrics.correct, quizMetrics.wrong, quizMetrics.hinted);
 
   async function showWordDetail(node, dict) {
     detailWordEl.textContent = node.displayText;

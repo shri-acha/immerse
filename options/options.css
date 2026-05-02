@@ -4,9 +4,9 @@ body, html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #0f172a;
+  background-color: #050505;
   font-family: 'Inter', system-ui, sans-serif;
-  color: #f8fafc;
+  color: #ffffff;
 }
 
 #graphCanvas {
@@ -24,110 +24,55 @@ body, html {
   position: absolute;
   top: 24px;
   left: 24px;
-  background: rgba(30, 41, 59, 0.85);
-  backdrop-filter: blur(10px);
+  background: #000000;
   padding: 24px;
-  border-radius: 16px;
-  border: 1px solid #334155;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+  border: 1px solid #22c55e;
   z-index: 10;
+  width: 280px;
 }
 
 .overlay h1 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  color: #f8fafc;
-}
-
-.overlay p {
   margin: 0 0 16px 0;
-  color: #94a3b8;
-  font-size: 14px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #22c55e;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .stats {
   display: flex;
-  gap: 16px;
-  font-size: 14px;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #888888;
 }
 
 .stats span {
-  background: rgba(15, 23, 42, 0.5);
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  background: transparent;
+  padding: 12px;
+  border-radius: 2px;
+  border: 1px solid #333333;
 }
 
 .stats strong {
-  color: #4ade80;
-}
-
-.graph-controls {
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.lang-select {
-  background: rgba(15, 23, 42, 0.8);
-  color: #f8fafc;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-  cursor: pointer;
-}
-
-.lang-select:focus {
-  border-color: #4ade80;
-}
-
-.export-controls {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-}
-
-.export-btn {
-  flex: 1;
-  padding: 6px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  color: #f8fafc;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.export-btn:hover {
-  border-color: #4ade80;
-  background: rgba(74, 222, 128, 0.1);
-}
-
-.export-btn:disabled {
-  opacity: 0.5;
-  cursor: wait;
+  color: #22c55e;
 }
 
 .word-detail {
   position: absolute;
   bottom: 24px;
   right: 24px;
-  width: 340px;
+  width: 300px;
   max-height: 400px;
   overflow-y: auto;
-  background: rgba(30, 41, 59, 0.92);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  border: 1px solid #334155;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  background: #000000;
+  border-radius: 2px;
+  border: 1px solid #22c55e;
   padding: 20px;
   z-index: 20;
 }
@@ -142,75 +87,83 @@ body, html {
 .word-detail-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #f8fafc;
+  font-weight: 800;
+  color: #22c55e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .pos-tag {
-  background: rgba(74, 222, 128, 0.15);
-  color: #4ade80;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  background: #22c55e;
+  color: #000000;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .close-btn {
   margin-left: auto;
   background: none;
   border: none;
-  color: #94a3b8;
-  font-size: 22px;
+  color: #888888;
+  font-size: 24px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0;
   line-height: 1;
 }
 
 .close-btn:hover {
-  color: #f8fafc;
+  color: #ffffff;
 }
 
 .detail-freq {
-  font-size: 13px;
-  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888888;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid #333333;
 }
 
 .detail-defs {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
+  color: #ffffff;
 }
 
 .detail-defs .def-item {
   margin-bottom: 10px;
   padding-left: 12px;
-  border-left: 2px solid #334155;
+  border-left: 2px solid #22c55e;
 }
 
 .detail-defs .def-num {
-  color: #4ade80;
-  font-weight: 600;
+  color: #22c55e;
+  font-weight: 700;
   margin-right: 6px;
 }
 
 .detail-defs .no-def {
-  color: #64748b;
+  color: #888888;
   font-style: italic;
 }
 
 /* Quiz Metrics Panel */
 .quiz-metrics-panel {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #334155;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #333333;
 }
 
 .quiz-metrics-panel h3 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #f8fafc;
+  margin: 0 0 16px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #888888;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .metrics-row {
@@ -226,7 +179,7 @@ body, html {
 .metrics-numbers {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
 }
 
@@ -234,22 +187,23 @@ body, html {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .metric-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
 .metric-correct .metric-dot {
-  background: #4ade80;
+  background: #22c55e;
 }
 
 .metric-wrong .metric-dot {
-  background: #f87171;
+  background: #ef4444;
 }
 
 .metric-hinted .metric-dot {
@@ -257,22 +211,21 @@ body, html {
 }
 
 .metric-label {
-  color: #94a3b8;
+  color: #888888;
   flex: 1;
 }
 
 .metric-val {
   font-weight: 700;
-  color: #f8fafc;
-  min-width: 24px;
+  color: #ffffff;
   text-align: right;
 }
 
 /* Node legend */
 .node-legend {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #333333;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -280,25 +233,27 @@ body, html {
 }
 
 .legend-title {
-  font-size: 11px;
-  color: #64748b;
-  font-weight: 600;
+  font-size: 10px;
+  color: #888888;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-right: 4px;
+  letter-spacing: 1px;
+  width: 100%;
+  margin-bottom: 4px;
 }
 
 .legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 11px;
-  color: #94a3b8;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .legend-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   display: inline-block;
 }
