@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const difficultySlider = document.getElementById('difficultyLevel');
   const diffValue = document.getElementById('diffValue');
   const difficultyDesc = document.getElementById('difficultyDesc');
+  const practiceNowBtn = document.getElementById('practiceNowBtn');
   const viewGraphBtn = document.getElementById('viewGraphBtn');
 
   // Load initial settings
@@ -32,6 +33,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   difficultySlider.addEventListener('change', (e) => {
     chrome.storage.local.set({ difficultyLevel: parseInt(e.target.value, 10) });
   });
+
+  if (practiceNowBtn) {
+    practiceNowBtn.addEventListener('click', () => {
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if (tabs[0]) {
+          chrome.tabs.sendMessage(tabs[0].id, {action: 'trigger_quiz'}, function(response) {
+            if (chrome.runtime.lastError) {
+              console.error(chrome.runtime.lastError);
+            } else {
+              window.close(); // Close the popup after clicking practice
+            }
+          });
+        }
+      });
+    });
+  }
 
   if (viewGraphBtn) {
     viewGraphBtn.addEventListener('click', () => {

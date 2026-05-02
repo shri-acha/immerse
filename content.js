@@ -21,8 +21,58 @@ async function init() {
     await processDOM(document.body);
     setupObserver();
     setupQuizListeners();
+    
+    // Auto-generate quiz with 10% chance on page load for spaced repetition
+    if (Math.random() < 0.1) {
+      setTimeout(autoGenerateQuiz, 2000); // Wait 2s for page to settle
+    }
   } else {
     setupHighlightToTranslate();
+  }
+
+  // Listen for messages from popup (like Practice Now)
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'trigger_quiz') {
+      autoGenerateQuiz(true);
+      sendResponse({ ok: true });
+    }
+  });
+}
+
+// --- Auto Quiz Generation ---
+async function autoGenerateQuiz(force = false) {
+  const data = await chrome.storage.local.get(['vocabulary', 'wordStats']);
+  const vocab = data.vocabulary || {};
+  const stats = data.wordStats || {};
+  
+  const words = Object.keys(vocab);
+  if (words.length === 0) {
+    if (force) alert("Your Knowledge Graph is empty. Browse the web to learn some words first!");
+    return;
+  }
+
+  // Weight words by weakness: (wrong * 2) + hinted + 1 (base weight)
+  let totalWeight = 0;
+  const wordWeights = words.map(w => {
+    const ws = stats[w] || { correct: 0, wrong: 0, hinted: 0 };
+    const weight = (ws.wrong * 2) + ws.hinted + 1;
+    totalWeight += weight;
+    return { word: w, weight: weight };
+  });
+
+  let random = Math.random() * totalWeight;
+  let selectedWord = words[0];
+  
+  for (let ww of wordWeights) {
+    random -= ww.weight;
+    if (random <= 0) {
+      selectedWord = ww.word;
+      break;
+    }
+  }
+
+  if (window.__immerseQuiz) {
+    window.__immerseQuiz.create(selectedWord, vocab[selectedWord]);
   }
 }
 
