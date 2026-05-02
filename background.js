@@ -61,10 +61,11 @@ function trackVocabulary(text) {
 
 const gtCache = new Map();
 
-async function translateToEnglish(text) {
+async function translateToEnglish(text, srcLang) {
   if (gtCache.has(text)) return gtCache.get(text);
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    const sl = srcLang || 'auto';
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=en&dt=t&q=${encodeURIComponent(text)}`;
     const res = await fetch(url);
     const data = await res.json();
     const result = data[0].map(x => x[0]).join('');
@@ -79,7 +80,7 @@ async function translateToEnglish(text) {
 // Helper to interact with the TMT API
 async function translateText(text, srcLang, tgtLang) {
   // First, force an intermediate translation to English to support source languages like Chinese, French, etc.
-  let englishText = await translateToEnglish(text);
+  let englishText = await translateToEnglish(text, srcLang);
 
   if (tgtLang === 'en') {
     return englishText;
@@ -93,7 +94,7 @@ async function translateText(text, srcLang, tgtLang) {
     translatedText = translationCache.get(cacheKey);
   } else {
     try {
-      console.log(`[Tamang Immersion] [API] Call TMT for: "${englishText}" (Original: "${text}")`);
+      console.log(`[Tamang Immersion] [API] Call TMT for: "${englishText}" (Original: "${text}", srcLang: ${srcLang})`);
       const response = await fetch("https://tmt.ilprl.ku.edu.np/lang-translate", {
         method: "POST",
         headers: {
@@ -103,7 +104,7 @@ async function translateText(text, srcLang, tgtLang) {
         body: JSON.stringify({
           text: englishText,
           src_lang: 'en', // Intermediate is always English
-          tgt_lang: tgtLang
+          tgt_lang: tgtLang // usually 'tmg'
         })
       });
 

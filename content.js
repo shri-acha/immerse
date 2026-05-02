@@ -2,6 +2,7 @@
 let isLearningMode = false;
 let difficultyLevel = 1; // 1 to 4
 let stats = { seen: 0, translated: 0 };
+let baseLanguage = 'en';
 let isProcessing = false;
 
 // --- Constants ---
@@ -10,10 +11,11 @@ const SENTENCE_REGEX = /[^.!?]+[.!?]+/g; // Basic sentence splitting
 
 // --- Initialization ---
 async function init() {
-  const data = await chrome.storage.local.get(['isLearningMode', 'difficultyLevel', 'stats']);
+  const data = await chrome.storage.local.get(['isLearningMode', 'difficultyLevel', 'stats', 'baseLanguage']);
   isLearningMode = data.isLearningMode || false;
   difficultyLevel = data.difficultyLevel || 1;
   stats = data.stats || { seen: 0, translated: 0 };
+  baseLanguage = data.baseLanguage || 'en';
 
   if (isLearningMode) {
     await processDOM(document.body);
@@ -46,8 +48,9 @@ function setupQuizListeners() {
 // Listen for settings changes from popup
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'local') {
-    if (changes.isLearningMode) {
-      isLearningMode = changes.isLearningMode.newValue;
+    if (changes.isLearningMode || changes.baseLanguage) {
+      if (changes.isLearningMode) isLearningMode = changes.isLearningMode.newValue;
+      if (changes.baseLanguage) baseLanguage = changes.baseLanguage.newValue;
       location.reload(); // Simple way to apply/remove changes for MVP
     }
   }
@@ -211,7 +214,7 @@ function translateWithAPI(text) {
     chrome.runtime.sendMessage({
       action: 'translate',
       text: text,
-      srcLang: 'en',
+      srcLang: baseLanguage,
       tgtLang: 'tmg'
     }, response => {
       if (chrome.runtime.lastError) {
@@ -278,10 +281,15 @@ function showResult(x, y, original, translated) {
     document.body.appendChild(resultBox);
   }
 
+  let originalTTSLang = 'en-US';
+  if (baseLanguage === 'de') originalTTSLang = 'de-DE';
+  else if (baseLanguage === 'fr') originalTTSLang = 'fr-FR';
+  else if (baseLanguage === 'zh-CN') originalTTSLang = 'zh-CN';
+
   resultBox.innerHTML = `
     <div class="tamang-result-row">
       <span class="original">${original}</span>
-      <button class="tamang-tts-btn" data-text="${original}" data-lang="en-US" title="Listen">🔊</button>
+      <button class="tamang-tts-btn" data-text="${original}" data-lang="${originalTTSLang}" title="Listen">🔊</button>
     </div>
     <div class="tamang-result-row">
       <span class="translated">${translated}</span>
@@ -326,6 +334,15 @@ function playTTS(text, lang) {
                       voices.find(v => v.lang.toLowerCase().startsWith('hi')) || 
                       voices.find(v => v.lang.toLowerCase() === 'en-in' || v.lang.toLowerCase().includes('-in'));
     if (bestVoice) utterance.voice = bestVoice;
+  } else if (lang === 'de-DE') {
+    const voice = voices.find(v => v.lang.toLowerCase().startsWith('de'));
+    if (voice) utterance.voice = voice;
+  } else if (lang === 'fr-FR') {
+    const voice = voices.find(v => v.lang.toLowerCase().startsWith('fr'));
+    if (voice) utterance.voice = voice;
+  } else if (lang === 'zh-CN') {
+    const voice = voices.find(v => v.lang.toLowerCase().startsWith('zh'));
+    if (voice) utterance.voice = voice;
   } else {
     const enVoice = voices.find(v => v.lang.toLowerCase().startsWith('en-us')) || 
                     voices.find(v => v.lang.toLowerCase().startsWith('en'));

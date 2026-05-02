@@ -65,6 +65,24 @@ h1 {
   border-radius: 2px;
 }
 
+.flat-select {
+  background: #000000;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  outline: none;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.flat-select:focus {
+  border-color: var(--accent);
+}
+
 /* Minimal Flat Toggle Switch */
 .switch {
   position: relative;

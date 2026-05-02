@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const baseLangSelect = document.getElementById('baseLanguage');
   const modeToggle = document.getElementById('learningMode');
   const difficultySlider = document.getElementById('difficultyLevel');
   const diffValue = document.getElementById('diffValue');
@@ -6,13 +7,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const viewGraphBtn = document.getElementById('viewGraphBtn');
 
   // Load initial settings
-  const data = await chrome.storage.local.get(['isLearningMode', 'difficultyLevel']);
+  const data = await chrome.storage.local.get(['isLearningMode', 'difficultyLevel', 'baseLanguage']);
   
+  if (baseLangSelect) baseLangSelect.value = data.baseLanguage || 'en';
   modeToggle.checked = data.isLearningMode || false;
   difficultySlider.value = data.difficultyLevel || 1;
   updateDifficultyDesc(difficultySlider.value);
 
   // Event Listeners
+  if (baseLangSelect) {
+    baseLangSelect.addEventListener('change', (e) => {
+      chrome.storage.local.set({ baseLanguage: e.target.value });
+    });
+  }
+
   modeToggle.addEventListener('change', () => {
     chrome.storage.local.set({ isLearningMode: modeToggle.checked });
   });

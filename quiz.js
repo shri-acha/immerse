@@ -252,20 +252,34 @@
   }
 
   // --- Create the Quiz Overlay ---
-  function createQuizOverlay(originalWord, translatedWord) {
+  async function createQuizOverlay(originalWord, translatedWord) {
     if (currentQuiz) destroyQuizOverlay();
 
+    const data = await chrome.storage.local.get(['baseLanguage']);
+    const baseLanguage = data.baseLanguage || 'en';
+
     // Randomly pick direction
-    const isReverse = Math.random() > 0.5; // true = Tamang→English
+    const isReverse = Math.random() > 0.5; // true = Tamang→BaseLang
     const promptWord = isReverse ? translatedWord : originalWord;
-    const promptLabel = isReverse ? 'What does this mean in English?' : 'Translate to Tamang:';
+    
+    const langNames = { 'en': 'English', 'de': 'German', 'fr': 'French', 'zh-CN': 'Chinese' };
+    const langName = langNames[baseLanguage] || baseLanguage;
+
+    const promptLabel = isReverse ? `What does this mean in ${langName}?` : `Translate to Tamang:`;
     const correctAnswers = isReverse ? [originalWord] : [translatedWord];
-    const needsDevanagari = !isReverse; // English→Tamang needs Devanagari input
+    
+    // Devanagari is needed when typing a Tamang answer (so when it's BaseLang->Tamang)
+    const needsDevanagari = !isReverse;
 
-    const promptLang = isReverse ? 'ne-NP' : 'en-US';
-    const answerLang = isReverse ? 'en-US' : 'ne-NP';
+    let baseTTSLang = 'en-US';
+    if (baseLanguage === 'de') baseTTSLang = 'de-DE';
+    else if (baseLanguage === 'fr') baseTTSLang = 'fr-FR';
+    else if (baseLanguage === 'zh-CN') baseTTSLang = 'zh-CN';
 
-    console.log(`[Tamang Quiz] [CREATE] Quiz created: "${originalWord}" <-> "${translatedWord}" | Direction: ${isReverse ? 'Tamang->English' : 'English->Tamang'} | Devanagari input: ${needsDevanagari}`);
+    const promptLang = isReverse ? 'ne-NP' : baseTTSLang;
+    const answerLang = isReverse ? baseTTSLang : 'ne-NP';
+
+    console.log(`[Tamang Quiz] [CREATE] Quiz created: "${originalWord}" <-> "${translatedWord}" | Direction: ${isReverse ? `Tamang->${langName}` : `${langName}->Tamang`} | Devanagari input: ${needsDevanagari}`);
 
     // Backdrop
     const backdrop = document.createElement('div');
@@ -277,7 +291,7 @@
 
     card.innerHTML = `
       <div class="tq-header">
-        <span class="tq-badge">${isReverse ? 'Tamang > English' : 'English > Tamang'}</span>
+        <span class="tq-badge">${isReverse ? `Tamang > ${langName}` : `${langName} > Tamang`}</span>
         <button class="tq-close" aria-label="Close">&times;</button>
       </div>
       <div class="tq-prompt-container">
